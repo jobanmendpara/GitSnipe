@@ -1,8 +1,11 @@
+import clsx from "clsx";
 import { Action, CustomMessage } from "../../types";
 import "../global.css";
 import { ChangeEvent, useEffect, useState } from "react";
+import { extractRepo } from "../../utils";
 
 export const Popup = () => {
+  const [activeIndex, _setActiveIndex] = useState(0);
   const [links, setLinks] = useState(new Array<string>());
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredLinks, setFilteredLinks] = useState(new Array<string>());
@@ -31,22 +34,36 @@ export const Popup = () => {
   }, []);
 
   return (
-    <div className="p-3 h-full bg-slate-700">
-      <p className="text-white font-extrabold">{filteredLinks.length} git links found</p>
+    <div className="p-3 h-full bg-background">
+      <p
+        className={clsx(filteredLinks.length > 0 ? 'text-green-500' : 'text-red-500', 'font-extrabold')}
+      >
+        {filteredLinks.length} gits found
+      </p>
       <input
         type="text"
         placeholder="Search..."
-        className="p-1 w-full border border-black-900"
+        className="p-1 text-background w-full border border-border"
         value={searchTerm}
         onChange={handleSearch}
+        autoFocus={true}
       />
-      <div className="border border-slate-400">
-        {filteredLinks.map((link, index) => (
-          <p key={index} className="text-white p-2 border-b border-slate-400">
-            <a href={link} target="_blank">{link}</a>
-          </p>
-        ))}
-      </div>
+      {filteredLinks.map((link, index) => (
+        <a
+          href={link}
+          target="_blank"
+        >
+          <div
+            key={link}
+            className={clsx(
+              index === activeIndex ? 'bg-slate-700' : '',
+              'text-white p-2'
+            )}
+          >
+            <p>{extractRepo(link)}</p>
+          </div>
+        </a>
+      ))}
     </div>
   );
 };

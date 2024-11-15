@@ -1,7 +1,7 @@
 {
   "name": "GoGitIt",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@types/node": "^22.5.5",
+    "clsx": "^2.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "vite-plugin-static-copy": "^1.0.6"
