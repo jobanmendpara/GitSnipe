@@ -22,8 +22,17 @@
     "js": ["content.js"],
     "run_at": "document_idle"
   }],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+G",
+        "mac": "Command+G"
+      }
+    }
+  },
   "permissions": [
     "activeTab",
+    "scripting",
     "storage"
   ]
 }

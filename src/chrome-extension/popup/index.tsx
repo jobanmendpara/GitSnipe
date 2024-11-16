@@ -5,7 +5,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { extractRepo } from "../../utils";
 
 export const Popup = () => {
-  const [activeIndex, _setActiveIndex] = useState(0);
+  const [activeLink, setActiveLink] = useState('');
   const [links, setLinks] = useState(new Array<string>());
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredLinks, setFilteredLinks] = useState(new Array<string>());
@@ -16,13 +16,14 @@ export const Popup = () => {
     setFilteredLinks(data);
   };
 
-  function handleSearch(e: ChangeEvent<HTMLInputElement>) {
-    const term = e.target.value.toLowerCase();
+  function handleSearch(event: ChangeEvent<HTMLInputElement>) {
+    const term = event.target.value.toLowerCase();
     setSearchTerm(term);
 
     const filtered = links.filter(link => link.toLowerCase().includes(term));
 
     setFilteredLinks(filtered);
+    setActiveLink(filtered[0]);
   }
 
   useEffect(() => {
@@ -31,7 +32,21 @@ export const Popup = () => {
     }).then((val: Array<string>) => {
       handleGitLinks(val);
     });
-  }, []);
+
+    const handleKeyDown = ({ key }: KeyboardEvent) => {
+      if (key === 'Enter') {
+        window.open(activeLink, '_blank');
+
+        return;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeLink]);
 
   return (
     <div className="p-3 h-full bg-background">
@@ -56,7 +71,7 @@ export const Popup = () => {
           <div
             key={link}
             className={clsx(
-              index === activeIndex ? 'bg-slate-700' : '',
+              index === 0 ? 'bg-slate-700' : '',
               'text-white p-2'
             )}
           >
