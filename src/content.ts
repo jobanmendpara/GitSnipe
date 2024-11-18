@@ -1,8 +1,8 @@
-function findGitLinks(): Set<string> {
+function extractGitLinks(): Set<string> {
   const getLinkRegex = /https?:\/\/(?:www\.)?(github|gitlab)\.com\/[^\s<>)"']+/g;
 
   const links = document.getElementsByTagName('a');
-  const gitLinks: Set<string> = new Set<string>();
+  const gitLinks: Set<string> = new Set();
 
   for (const link of links) {
     if (link.href.match(getLinkRegex)) {
@@ -13,10 +13,11 @@ function findGitLinks(): Set<string> {
   return gitLinks;
 }
 
-const links = findGitLinks();
-chrome.runtime.sendMessage({
-  action: 'sendLinks',
-  payload: {
-    links: [...links],
-  }
-});
+window.addEventListener('load', () => {
+  const gitLinks = Array.from(extractGitLinks());
+
+  chrome.runtime.sendMessage({
+    action: 'updateGitLinks',
+    links: gitLinks,
+  })
+})

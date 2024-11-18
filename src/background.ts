@@ -1,19 +1,33 @@
-import { Action, CustomMessage } from './types';
-import { filterValidRepos } from './utils';
+import { filterValidRepos } from "./utils";
 
-let links: Array<string> = [];
+let gitLinks: Array<string> = [];
+let popupPort: chrome.runtime.Port | null = null;
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  const customMessage = message as CustomMessage;
-
-  switch (customMessage.action) {
-    case Action.SEND_LINKS:
-      links = filterValidRepos(customMessage.payload.links);
-      break;
-    case Action.GET_LINKS:
-      sendResponse(links);
-      break;
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === 'popup') {
+    popupPort = port;
+    port.onMessage.addListener((request) => {
+      if (request.action === 'getGitLinks') {
+        port.postMessage({ action: 'updatePopup', links: gitLinks });
+      }
+    });
+    port.onDisconnect.addListener(() => {
+      popupPort = null;
+    });
   }
+});
 
-  return true;
+chrome.runtime.onMessage.addListener((request, _sender, _sendResponse) => {
+  if (request.action === 'updateGitLinks') {
+    gitLinks = filterValidRepos(request.links);
+    if (popupPort) {
+      popupPort.postMessage({ action: 'updatePopup', links: gitLinks });
+    }
+  }
+});
+
+chrome.tabs.onActivated.addListener((_info) => {
+  if (popupPort) {
+    popupPort.postMessage({ action: 'updatePopup', links:gitLinks });
+  }
 });

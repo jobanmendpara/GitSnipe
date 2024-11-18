@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { Action, CustomMessage } from "../../types";
 import "../global.css";
 import { ChangeEvent, useEffect, useState } from "react";
 import { extractRepo } from "../../utils";
@@ -26,12 +25,15 @@ export const Popup = () => {
     setActiveLink(filtered[0]);
   }
 
+
   useEffect(() => {
-    chrome.runtime.sendMessage<CustomMessage>({
-      action: Action.GET_LINKS,
-    }).then((val: Array<string>) => {
-      handleGitLinks(val);
-    });
+    const port = chrome.runtime.connect({ name: 'popup' });
+
+    const handleRefreshLinks = (request: { action: string, links: Array<string> }) => {
+      if (request.action === 'updatePopup') {
+        handleGitLinks(request.links);
+      }
+    }
 
     const handleKeyDown = ({ key }: KeyboardEvent) => {
       if (key === 'Enter') {
@@ -41,10 +43,15 @@ export const Popup = () => {
       }
     };
 
+    port.postMessage({ action: 'getGitLinks' });
+    port.onMessage.addListener(handleRefreshLinks);
+
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      port.disconnect();
+      port.onMessage.removeListener(handleRefreshLinks);
     };
   }, [activeLink]);
 
